@@ -12,10 +12,10 @@ export const CONFIG = {
 
   // Track generation
   controlPoints: 12,
-  baseRadius: 380,
-  radiusJitter: [0.55, 1.0],   // multipliers
-  angularJitter: 0.12,         // radians
-  widthStart: 220,
+  baseRadius: 400,
+  radiusJitter: [0.7, 1.0],    // multipliers; gentle variation avoids cusps
+  angularJitter: 0.1,          // radians
+  widthStart: 180,
   widthEnd: 70,
   checkpointCount: 12,
   lapsToWin: 3,
