@@ -1,5 +1,7 @@
 export function createProgress() {
-  return { lastCheckpoint: -1, lapCount: 0, started: false };
+  // Car spawns on the start line (checkpoint 0), so "next expected" is 1.
+  // `started: true` so crossing 0 after a full lap increments lapCount.
+  return { lastCheckpoint: 0, lapCount: 0, started: true };
 }
 
 export function segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy) {

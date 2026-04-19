@@ -13,8 +13,10 @@ export function generateTrack(seed) {
   for (let i = 0; i < n; i++) {
     const baseA = (i / n) * Math.PI * 2;
     const a = baseA + (rnd() - 0.5) * 2 * CONFIG.angularJitter;
-    const r = CONFIG.baseRadius * (rMin + rnd() * (rMax - rMin));
-    controls.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+    const jitter = rMin + rnd() * (rMax - rMin);
+    const rx = CONFIG.baseRadiusX * jitter;
+    const ry = CONFIG.baseRadiusY * jitter;
+    controls.push({ x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry });
   }
 
   const centerline = sampleClosedSpline(controls, 24);

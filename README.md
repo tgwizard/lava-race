@@ -20,10 +20,10 @@ Thrust has no upper speed cap — decelerate in time or you'll overshoot into th
 ## Run locally
 
 ```sh
-python3 -m http.server 8000
+python3 -m http.server 9922
 ```
 
-Open `http://localhost:8000/`. Tests are at `http://localhost:8000/tests.html`.
+Open `http://localhost:9922/`. Tests are at `http://localhost:9922/tests.html`.
 
 ## Playtest checklist
 

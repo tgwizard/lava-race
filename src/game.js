@@ -15,8 +15,8 @@ export function createGame() {
   let winner = null;
 
   function makeTrack() {
-    track = generateValidTrack(randomSeed, 80);
-    if (!track) throw new Error('Track generation failed after 80 attempts');
+    track = generateValidTrack(randomSeed, 400);
+    if (!track) throw new Error('Track generation failed after 400 attempts');
     checkpoints = generateCheckpoints(track, CONFIG.checkpointCount);
     mask = buildTrackMask(track, 0.5);
 

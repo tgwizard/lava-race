@@ -11,13 +11,16 @@ export const CONFIG = {
   speedTurnPenalty: 0.004, // turnRate = baseTurn / (1 + speed*penalty)
 
   // Track generation
-  controlPoints: 12,
-  baseRadius: 400,
-  radiusJitter: [0.7, 1.0],    // multipliers; gentle variation avoids cusps
-  angularJitter: 0.1,          // radians
-  widthStart: 180,
+  // Elliptical base fills the 16:10 world; more control points and wider
+  // jitter give longer, more varied tracks (chicanes, long straights).
+  controlPoints: 14,
+  baseRadiusX: 680,   // max extent: 680 + widthStart/2 ≤ world/2 − margin
+  baseRadiusY: 380,
+  radiusJitter: [0.82, 1.0],
+  angularJitter: 0.08,         // radians
+  widthStart: 160,
   widthEnd: 70,
-  checkpointCount: 12,
+  checkpointCount: 6,
   lapsToWin: 3,
 
   // Respawn
