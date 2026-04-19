@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lava Race — tests</title>
+    <style>
+      body { font-family: monospace; background: #111; color: #eee; padding: 1rem; }
+      .pass { color: #6f6; }
+      .fail { color: #f66; }
+      pre { white-space: pre-wrap; background: #222; padding: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <div id="results">running…</div>
+    <script type="module">
+      import './tests/smoke.test.js';
+      import { report } from './src/test-runner.js';
+      const { fail } = report();
+      document.title = fail ? `FAIL (${fail})` : 'PASS';
+    </script>
+  </body>
+</html>
