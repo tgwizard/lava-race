@@ -108,3 +108,29 @@ export function generateValidTrack(seedSource = defaultSeedSource, maxAttempts =
   }
   return null;
 }
+
+// Build a small offscreen canvas where TRACK pixels are opaque white and
+// LAVA is transparent. Used only for pixel lookups — NOT for rendering.
+export function buildTrackMask(track, scale = 0.5) {
+  const w = Math.ceil(CONFIG.world.width * scale);
+  const h = Math.ceil(CONFIG.world.height * scale);
+  const mask = document.createElement('canvas');
+  mask.width = w;
+  mask.height = h;
+  const mctx = mask.getContext('2d');
+  mctx.clearRect(0, 0, w, h);
+  mctx.fillStyle = '#fff';
+  mctx.beginPath();
+  mctx.moveTo(track.outer[0].x * scale, track.outer[0].y * scale);
+  for (const p of track.outer) mctx.lineTo(p.x * scale, p.y * scale);
+  mctx.closePath();
+  mctx.moveTo(track.inner[0].x * scale, track.inner[0].y * scale);
+  for (let i = track.inner.length - 1; i >= 0; i--) {
+    mctx.lineTo(track.inner[i].x * scale, track.inner[i].y * scale);
+  }
+  mctx.closePath();
+  mctx.fill('evenodd');
+  // Cache full image data once for fast lookup.
+  const imageData = mctx.getImageData(0, 0, w, h);
+  return { canvas: mask, ctx: mctx, data: imageData.data, width: w, height: h, scale };
+}
