@@ -109,6 +109,28 @@ export function generateValidTrack(seedSource = defaultSeedSource, maxAttempts =
   return null;
 }
 
+// Returns array of checkpoint line segments across the track at evenly-spaced
+// arc-length positions. Checkpoint 0 is the start/finish line.
+export function generateCheckpoints(track, count = CONFIG.checkpointCount) {
+  const cps = [];
+  const cl = track.centerline;
+  for (let k = 0; k < count; k++) {
+    const targetCum = (k / count) * track.perimeter;
+    let i = 0;
+    while (i < cl.length - 1 && cl[i + 1].cumulative < targetCum) i++;
+    const p = cl[i];
+    const w = track.widths[i] / 2;
+    const nx = -p.ty, ny = p.tx;
+    cps.push({
+      ax: p.x - nx * w, ay: p.y - ny * w,
+      bx: p.x + nx * w, by: p.y + ny * w,
+      midX: p.x, midY: p.y,
+      angle: Math.atan2(p.ty, p.tx),
+    });
+  }
+  return cps;
+}
+
 // Build a small offscreen canvas where TRACK pixels are opaque white and
 // LAVA is transparent. Used only for pixel lookups — NOT for rendering.
 export function buildTrackMask(track, scale = 0.5) {
