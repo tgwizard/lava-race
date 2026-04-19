@@ -1,15 +1,17 @@
 import { CONFIG } from './config.js';
 import { createInput } from './input.js';
+import { createCar, stepCar } from './car.js';
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const input = createInput();
+const car = createCar(CONFIG.world.width / 2, CONFIG.world.height / 2, 0);
 
 function resize() {
   const { innerWidth: w, innerHeight: h } = window;
-  const targetRatio = CONFIG.world.width / CONFIG.world.height;
-  let width = w, height = Math.round(w / targetRatio);
-  if (height > h) { height = h; width = Math.round(h * targetRatio); }
+  const ratio = CONFIG.world.width / CONFIG.world.height;
+  let width = w, height = Math.round(w / ratio);
+  if (height > h) { height = h; width = Math.round(h * ratio); }
   canvas.width = CONFIG.world.width;
   canvas.height = CONFIG.world.height;
   canvas.style.width = `${width}px`;
@@ -18,15 +20,25 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-function tick() {
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(1 / 30, (now - last) / 1000);
+  last = now;
+  stepCar(car, input.red, dt);
+
   ctx.fillStyle = CONFIG.colors.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = CONFIG.colors.hud;
-  ctx.font = '32px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  const r = input.red, b = input.blue;
-  ctx.fillText(`Red  thrust=${r.thrust} brake=${r.brake} turn=${r.turn}`, 40, 80);
-  ctx.fillText(`Blue thrust=${b.thrust} brake=${b.brake} turn=${b.turn}`, 40, 120);
+
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  ctx.rotate(car.angle);
+  ctx.fillStyle = CONFIG.colors.red;
+  ctx.shadowBlur = 24; ctx.shadowColor = CONFIG.colors.red;
+  ctx.beginPath();
+  ctx.moveTo(20, 0); ctx.lineTo(-14, 10); ctx.lineTo(-14, -10); ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);

@@ -15,6 +15,7 @@
     <script type="module">
       import './tests/smoke.test.js';
       import './tests/rng.test.js';
+      import './tests/car.test.js';
       import { report } from './src/test-runner.js';
       const { fail } = report();
       document.title = fail ? `FAIL (${fail})` : 'PASS';
