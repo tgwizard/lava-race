@@ -11,17 +11,18 @@ export const CONFIG = {
   speedTurnPenalty: 0.004, // turnRate = baseTurn / (1 + speed*penalty)
 
   // Track generation
-  // Control points alternate between an INNER band and an OUTER band of an
-  // ellipse. The spline smooths through alternating in/out points, creating
-  // inflection points (S-curves) — driving the loop forces you to turn both
-  // ways rather than riding one continuous arc.
-  controlPoints: 10,            // 5 in/out pairs → 5 lobes; fewer points
-                                //   give each lobe more arc length to resolve.
+  // Control points are placed around an ellipse and each is pulled toward the
+  // INNER band or pushed to the OUTER band. The inner/outer pattern is
+  // randomized (with a cap on consecutive runs) and the control-point count
+  // varies per seed — so every track has a different lobe count and shape
+  // rather than the same symmetric star.
+  controlPointsRange: [8, 13],  // inclusive; picked per track
+  maxRunLength: 2,              // no more than N inner-or-outer in a row
   baseRadiusX: 680,             // max: 680 + widthStart/2 ≤ world/2 − margin
   baseRadiusY: 400,
-  innerBand: [0.55, 0.75],      // multipliers for even-index "inner" points
-  outerBand: [0.88, 1.0],       // multipliers for odd-index "outer" points
-  angularJitter: 0.1,           // radians
+  innerBand: [0.45, 0.78],      // multipliers for inner points
+  outerBand: [0.85, 1.0],       // multipliers for outer points
+  angularJitter: 0.22,          // radians — bigger jitter = less symmetric
   widthStart: 150,              // "wide" width on straights
   widthEnd: 75,                 // "narrow" width in the middle of the lap
   // Track also auto-narrows at sharp corners so offset polygons don't cusp.

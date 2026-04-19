@@ -6,17 +6,34 @@ export function generateTrack(seed) {
   const rnd = mulberry32(seed);
   const cx = CONFIG.world.width / 2;
   const cy = CONFIG.world.height / 2;
-  const n = CONFIG.controlPoints;
+  const [nMin, nMax] = CONFIG.controlPointsRange;
+  const n = nMin + Math.floor(rnd() * (nMax - nMin + 1));
   const [innerMin, innerMax] = CONFIG.innerBand;
   const [outerMin, outerMax] = CONFIG.outerBand;
+
+  // Assign each point inner-or-outer randomly. Cap the run length so the
+  // centerline still threads through inflection points (S-curves) rather
+  // than bulging in one direction for too long. We force the last point to
+  // differ from the first so the closed loop doesn't get a long same-kind
+  // run spanning the seam.
+  const kinds = new Array(n);
+  let run = 0;
+  let prev = rnd() < 0.5 ? 0 : 1;
+  kinds[0] = prev;
+  for (let i = 1; i < n; i++) {
+    const forceFlip = run >= CONFIG.maxRunLength;
+    const k = forceFlip ? 1 - prev : (rnd() < 0.5 ? 0 : 1);
+    kinds[i] = k;
+    run = k === prev ? run + 1 : 1;
+    prev = k;
+  }
+  if (kinds[n - 1] === kinds[0]) kinds[n - 1] = 1 - kinds[0];
 
   const controls = [];
   for (let i = 0; i < n; i++) {
     const baseA = (i / n) * Math.PI * 2;
     const a = baseA + (rnd() - 0.5) * 2 * CONFIG.angularJitter;
-    // Alternate: odd indices pushed out, even indices pulled in. The result
-    // is a flower-like polygon whose smoothed centerline has inflections.
-    const outer = i % 2 === 1;
+    const outer = kinds[i] === 1;
     const lo = outer ? outerMin : innerMin;
     const hi = outer ? outerMax : innerMax;
     const jitter = lo + rnd() * (hi - lo);
