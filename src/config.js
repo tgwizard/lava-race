@@ -11,15 +11,20 @@ export const CONFIG = {
   speedTurnPenalty: 0.004, // turnRate = baseTurn / (1 + speed*penalty)
 
   // Track generation
-  // Elliptical base fills the 16:10 world; more control points and wider
-  // jitter give longer, more varied tracks (chicanes, long straights).
-  controlPoints: 14,
-  baseRadiusX: 680,   // max extent: 680 + widthStart/2 ≤ world/2 − margin
-  baseRadiusY: 380,
-  radiusJitter: [0.82, 1.0],
-  angularJitter: 0.08,         // radians
-  widthStart: 160,
-  widthEnd: 70,
+  // Control points alternate between an INNER band and an OUTER band of an
+  // ellipse. The spline smooths through alternating in/out points, creating
+  // inflection points (S-curves) — driving the loop forces you to turn both
+  // ways rather than riding one continuous arc.
+  controlPoints: 10,            // 5 in/out pairs → 5 lobes; fewer points
+                                //   give each lobe more arc length to resolve.
+  baseRadiusX: 680,             // max: 680 + widthStart/2 ≤ world/2 − margin
+  baseRadiusY: 400,
+  innerBand: [0.55, 0.75],      // multipliers for even-index "inner" points
+  outerBand: [0.88, 1.0],       // multipliers for odd-index "outer" points
+  angularJitter: 0.1,           // radians
+  widthStart: 150,              // "wide" width on straights
+  widthEnd: 75,                 // "narrow" width in the middle of the lap
+  // Track also auto-narrows at sharp corners so offset polygons don't cusp.
   checkpointCount: 6,
   lapsToWin: 3,
 

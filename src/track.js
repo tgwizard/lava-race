@@ -7,13 +7,19 @@ export function generateTrack(seed) {
   const cx = CONFIG.world.width / 2;
   const cy = CONFIG.world.height / 2;
   const n = CONFIG.controlPoints;
-  const [rMin, rMax] = CONFIG.radiusJitter;
+  const [innerMin, innerMax] = CONFIG.innerBand;
+  const [outerMin, outerMax] = CONFIG.outerBand;
 
   const controls = [];
   for (let i = 0; i < n; i++) {
     const baseA = (i / n) * Math.PI * 2;
     const a = baseA + (rnd() - 0.5) * 2 * CONFIG.angularJitter;
-    const jitter = rMin + rnd() * (rMax - rMin);
+    // Alternate: odd indices pushed out, even indices pulled in. The result
+    // is a flower-like polygon whose smoothed centerline has inflections.
+    const outer = i % 2 === 1;
+    const lo = outer ? outerMin : innerMin;
+    const hi = outer ? outerMax : innerMax;
+    const jitter = lo + rnd() * (hi - lo);
     const rx = CONFIG.baseRadiusX * jitter;
     const ry = CONFIG.baseRadiusY * jitter;
     controls.push({ x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry });
@@ -31,7 +37,61 @@ export function generateTrack(seed) {
     return CONFIG.widthStart + (CONFIG.widthEnd - CONFIG.widthStart) * tightness;
   }
 
-  const widths = centerline.map(p => widthAt(p.cumulative / perimeter));
+  // Target widths from the profile; we'll shrink them below wherever offset
+  // polygons would cusp.
+  const N = centerline.length;
+  const widths = new Array(N);
+  for (let i = 0; i < N; i++) {
+    widths[i] = widthAt(centerline[i].cumulative / perimeter);
+  }
+
+  // Iteratively detect offset-segment reversal ("cusp" on inner or outer) and
+  // shrink widths around the bad spot until no segment reverses. The window
+  // spreads the width reduction across several samples so the track tapers
+  // smoothly into a tight corner instead of popping.
+  const SHRINK = 0.82;
+  const WINDOW = 3;
+  const MAX_ITERS = 60;
+  for (let iter = 0; iter < MAX_ITERS; iter++) {
+    let anyBad = false;
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      const p  = centerline[i],  q  = centerline[j];
+      const wi = widths[i] / 2, wj = widths[j] / 2;
+      const nix = -p.ty, niy = p.tx;
+      const njx = -q.ty, njy = q.tx;
+
+      const innerDx = (q.x - njx * wj) - (p.x - nix * wi);
+      const innerDy = (q.y - njy * wj) - (p.y - niy * wi);
+      const outerDx = (q.x + njx * wj) - (p.x + nix * wi);
+      const outerDy = (q.y + njy * wj) - (p.y + niy * wi);
+      const cx = q.x - p.x, cy = q.y - p.y;
+      const centerDot = cx * p.tx + cy * p.ty;
+      const minDot = centerDot * 0.65;
+
+      if (innerDx * p.tx + innerDy * p.ty < minDot ||
+          outerDx * p.tx + outerDy * p.ty < minDot) {
+        for (let k = -WINDOW; k <= WINDOW; k++) {
+          widths[(i + k + N) % N] *= SHRINK;
+        }
+        anyBad = true;
+      }
+    }
+    if (!anyBad) break;
+  }
+
+  // Clamp to a sensible lower bound and smooth with a small running min
+  // so transitions aren't jagged.
+  const floor = Math.max(24, CONFIG.widthEnd * 0.4);
+  for (let i = 0; i < N; i++) widths[i] = Math.max(widths[i], floor);
+  const smoothed = new Array(N);
+  const WIN = 3;
+  for (let i = 0; i < N; i++) {
+    let m = Infinity;
+    for (let k = -WIN; k <= WIN; k++) m = Math.min(m, widths[(i + k + N) % N]);
+    smoothed[i] = m;
+  }
+  for (let i = 0; i < N; i++) widths[i] = smoothed[i];
   const inner = [];
   const outer = [];
   for (let i = 0; i < centerline.length; i++) {
