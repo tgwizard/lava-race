@@ -99,7 +99,7 @@ export function generateTrack(seed) {
 
   // Clamp to a sensible lower bound and smooth with a small running min
   // so transitions aren't jagged.
-  const floor = Math.max(24, CONFIG.widthEnd * 0.4);
+  const floor = Math.max(40, CONFIG.widthEnd * 0.5);
   for (let i = 0; i < N; i++) widths[i] = Math.max(widths[i], floor);
   const smoothed = new Array(N);
   const WIN = 3;

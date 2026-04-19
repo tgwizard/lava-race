@@ -24,7 +24,7 @@ export const CONFIG = {
   outerBand: [0.85, 1.0],       // multipliers for outer points
   angularJitter: 0.22,          // radians — bigger jitter = less symmetric
   widthStart: 150,              // "wide" width on straights
-  widthEnd: 75,                 // "narrow" width in the middle of the lap
+  widthEnd: 95,                 // "narrow" width in the middle of the lap
   // Track also auto-narrows at sharp corners so offset polygons don't cusp.
   checkpointCount: 6,
   lapsToWin: 3,
