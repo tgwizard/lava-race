@@ -4,6 +4,7 @@ import { generateValidTrack, generateCheckpoints, buildTrackMask } from './track
 import { isOnLava } from './collision.js';
 import { createProgress, updateProgress } from './checkpoints.js';
 import { randomSeed } from './rng.js';
+import { createParticles, emitThrust, emitBrake, stepParticles } from './particles.js';
 
 const STATES = { TITLE: 'title', COUNTDOWN: 'countdown', RACE: 'race', FINISH: 'finish' };
 
@@ -38,6 +39,7 @@ export function createGame() {
     car.respawnTimer = 0;
     car.progress = createProgress();
     car.lastSpawn = { x: pos.x, y: pos.y, angle };
+    car.particles = createParticles();
     return car;
   }
 
@@ -54,6 +56,9 @@ export function createGame() {
   makeTrack();
 
   function stepPlayer(car, playerInput, dt) {
+    // Particles age regardless of state so they fade out through respawn.
+    stepParticles(car.particles, dt);
+
     if (car.respawning) {
       car.respawnTimer -= dt;
       if (car.respawnTimer <= 0) {
@@ -71,6 +76,9 @@ export function createGame() {
 
     car.x = Math.max(0, Math.min(CONFIG.world.width, car.x));
     car.y = Math.max(0, Math.min(CONFIG.world.height, car.y));
+
+    if (playerInput.thrust) emitThrust(car.particles, car, dt);
+    if (playerInput.brake)  emitBrake(car.particles, car, dt);
 
     updateProgress(car.progress, checkpoints, CONFIG.checkpointCount, prev, car);
     updateSpawnFromCheckpoint(car);

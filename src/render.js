@@ -23,6 +23,8 @@ export function drawFrame(ctx, state) {
   if (track) drawTrack(ctx, track);
   if (checkpoints) drawCheckpoints(ctx, checkpoints);
 
+  // Particles sit between the track and the cars.
+  for (const c of cars) if (c.particles) drawParticles(ctx, c.particles);
   for (const c of cars) drawCar(ctx, c);
 
   if (hud) drawHud(ctx, hud);
@@ -147,6 +149,22 @@ function drawCheckpoints(ctx, checkpoints) {
     ctx.moveTo(cp.ax, cp.ay);
     ctx.lineTo(cp.bx, cp.by);
     ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawParticles(ctx, particles) {
+  ctx.save();
+  // Use additive blending for exhaust so overlapping sparks read as brighter
+  // fire; smoke falls back to normal blending since alpha stacking handles it.
+  for (const p of particles) {
+    const fade = Math.max(0, p.life / p.max);
+    ctx.globalCompositeOperation = p.smoke ? 'source-over' : 'lighter';
+    ctx.globalAlpha = fade * (p.smoke ? 0.45 : 0.85);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (p.smoke ? 1 : fade * 0.9 + 0.1), 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.restore();
 }
