@@ -1,0 +1,19 @@
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #07060a;
+  color: #e8e8ff;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  overflow: hidden;
+}
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#game {
+  background: #000;
+  image-rendering: pixelated;
+  box-shadow: 0 0 60px rgba(5, 217, 255, 0.15);
+}
